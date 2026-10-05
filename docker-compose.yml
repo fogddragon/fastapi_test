@@ -1,0 +1,22 @@
+services:
+  fastapitest_db:
+    image: postgres:16
+    volumes:
+      - ../db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=fastapitest
+      - POSTGRES_USER=fastapitest
+      - POSTGRES_PASSWORD=fastapitest
+      - POSTGRES_INITDB_ARGS="-c max_wal_size=2GB"
+    ports:
+      - "5432:5432"
+
+
+  web:
+    image: backend-fastapitest-image:dev
+    build: .
+    command: fastapi run main.py --port 8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      - fastapitest_db
