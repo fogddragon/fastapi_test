@@ -3,7 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql.annotation import Annotated
 from sqlmodel import Session
 
-from app.core import config
+from . import config
+
 
 postgres_url =f"postgresql+psycopg2://{config.DATABASE_USERNAME}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}/{config.DATABASE_NAME}"
 

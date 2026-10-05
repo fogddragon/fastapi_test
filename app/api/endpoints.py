@@ -1,15 +1,16 @@
 import hashlib
 import json
 
-from app.schemas.schemas import UnprocessedDataSchema
+from sqlmodel import Session, select
+
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.utils.data_transformer import transformer_function
+from fastapi_test.app.utils.data_transformer import transformer_function
+from fastapi_test.app.schemas.schemas import UnprocessedDataSchema
+from fastapi_test.app.core.database import SessionDep
+from fastapi_test.app.models.models import CachedData
+from fastapi_test.app.core.database import get_db
 
-from app.core.database import SessionDep
-from app.models.models import CachedData
-from app.core.database import get_db
-from sqlmodel import Session, select
 
 router = APIRouter(
     prefix="/api",
@@ -19,6 +20,7 @@ router = APIRouter(
 @router.post("/transform_list")
 async def create_transform_list(data: UnprocessedDataSchema, db: Session = Depends(get_db)):
     data_dict = data.dict()
+    # create hash with body to compare with database
     hash = hashlib.md5(json.dumps(data_dict, sort_keys=True).encode("utf-8")).hexdigest()
     existed_data = db.exec(select(CachedData).where(CachedData.hash == hash)).all()
     if not existed_data:
