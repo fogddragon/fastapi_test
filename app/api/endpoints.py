@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from fastapi_test.app.utils.data_transformer import transformer_function
 from fastapi_test.app.schemas.schemas import UnprocessedDataSchema
-from fastapi_test.app.core.database import SessionDep
 from fastapi_test.app.models.models import CachedData
 from fastapi_test.app.core.database import get_db
 
@@ -19,10 +18,11 @@ router = APIRouter(
 
 @router.post("/transform_list")
 async def create_transform_list(data: UnprocessedDataSchema, db: Session = Depends(get_db)):
-    data_dict = data.dict()
+    data_dict = data.model_dump()
     # create hash with body to compare with database
     hash = hashlib.md5(json.dumps(data_dict, sort_keys=True).encode("utf-8")).hexdigest()
     existed_data = db.exec(select(CachedData).where(CachedData.hash == hash)).all()
+    # if theres no stored data with this hash we add new object to database
     if not existed_data:
         transformed_data = transformer_function(data_dict)
         cached_data = CachedData(
